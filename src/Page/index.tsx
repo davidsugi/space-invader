@@ -1,39 +1,77 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as stores from "../stores";
 import { Container } from "./style";
+import Player from '@/components/Player';
+import player from "../asset/spaceinvaders.svg"
 
 export default function LandingPage() {
-    // State to manage the input value
-  const [inputValue, setInputValue] = useState('');
-  const { name, img, description, generateWaifu } = stores.useWaifuStore();
-  const [isLoading, setIsLoading] = useState(false);
-  const headerText = name ?? 'Waifu Matcher';
-  const subheaderText = description ??'Find out your Destined Waifu. based on your Name' ;
-    const headerImg = img;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [playerX, setPlayerX] = useState(0);
+  const [bullets, setBullets] = useState<{x:number,y:number}[]>([]);
+  const canvas = canvasRef.current;
+  const ctx = canvas?.getContext('2d');
 
-  // Function to handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
+  const drawPlayer = () => {
+    if(ctx){
+      ctx.fillStyle = 'blue';
+      const img = new Image();
+      img.src = player;
+
+      ctx.drawImage(img,playerX, (canvas?.height ?? 0) - 40, 40, 40)
+    }
   };
 
-  // Function to handle form submission
-  const handleSubmit = (e: any) => {
-    setIsLoading(true)
-
-    setTimeout(() => {
-        console.log('Submitted value:', inputValue);
-        generateWaifu(inputValue)
-        setIsLoading(false)
-      }, 1000); // Example async operation duration
-    // You can add further logic here, such as sending the form data to a server
+  const drawBullets = () => {
+    if(ctx){
+      ctx.fillStyle = 'red';
+      bullets.forEach((bullet) => {
+        ctx.fillRect(bullet.x, bullet.y, 5, 10);
+      });
+    }
   };
 
+  const moveBullets = () => {
+    setBullets((prevBullets) =>
+      prevBullets.map((bullet) => ({
+        ...bullet,
+        y: bullet.y - 5, // Adjust the bullet's speed and direction as needed
+      }))
+    );
+  };
 
-  return (
-    <>
-        <Container>
-          aa
-        </Container>
-    </>
-  )
+  const handleKeyDown = (event: { key: string; }) => {
+    if (event.key === 'ArrowLeft') {
+      setPlayerX((prevX) => prevX - 35);
+    } else if (event.key === 'ArrowRight') {
+      setPlayerX((prevX) => prevX + 35);
+    } else if (event.key === ' ') {
+      setBullets((prevBullets) => [
+        ...prevBullets,
+        { x: playerX + 18, y:(canvas?.height ?? 0) - 30 },
+      ]);
+    }
+  };
+
+  const updateGame = () => {
+    ctx?.clearRect(0, 0, canvas?.width ?? 0, canvas?.height ??0);
+    drawPlayer();
+    drawBullets();
+    moveBullets();
+  };
+
+  const gameLoop = () => {
+    updateGame();
+    requestAnimationFrame(gameLoop);
+  };
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    const animationId = requestAnimationFrame(gameLoop);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      cancelAnimationFrame(animationId);
+    };
+  }, [playerX, bullets]);
+
+  return <canvas ref={canvasRef} width={800} height={600} />;
 }

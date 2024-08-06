@@ -9,9 +9,10 @@
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
       "outDir": "./dist",
-      "baseUrl": "./src",
+      "baseUrl": ".",
       "paths": {
-        "*": ["types/*"]
+        "@/*": ["./src/*"],
+        "@components": ["./src/components"]
       }
     },
     "include": ["src"],
