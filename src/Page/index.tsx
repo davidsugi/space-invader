@@ -1,8 +1,6 @@
-import React, { useState } from 'react'
-import girls from '../asset/gg.jpeg'
-import {Container,BottomSegment, ImgBg, Header, Input, HelpText, Button, Link, Picture, SubHeader} from "./style";
-import Loader from '../components/Loader';
+import React, { useState } from 'react';
 import * as stores from "../stores";
+import { Container } from "./style";
 
 export default function LandingPage() {
     // State to manage the input value
